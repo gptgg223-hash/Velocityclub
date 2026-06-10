@@ -120,7 +120,8 @@ HOME_PAGE = """
         </form>
     </div>
 
-    <footer>Powered by XDevelopers • 2025</footer>
+    <p>Developed by XDevelopers with JioSaavn</p>
+<p>© 2026 Velocity Club</p>
 </body>
 </html>
 """
