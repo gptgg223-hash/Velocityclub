@@ -117,15 +117,59 @@ HOME_PAGE = """
         <form action="/search" method="POST" class="search-form">
             <input type="text" name="song" placeholder="Search songs, artists..." required>
             <button type="submit">Search</button>
+            <button type="button"
+            onclick="startVoice()">🎤</button>
         </form>
-    </div>
+<div style="margin-top:40px;text-align:center;">
+<h2>Trending Songs</h2>
 
-    <p>Developed by XDevelopers with JioSaavn</p>
+<form action="/search" method="POST">
+<button name="song" value="Believer">Believer</button>
+<button name="song" value="Shape of You">Shape of You</button>
+<button name="song" value="Kesariya">Kesariya</button>
+<button name="song" value="Levitating">Levitating</button>
+</form>
+</div>
+
+    </div>
+<p>Developed by XDevelopers with JioSaavn</p>
 <p>© 2026 Velocity Club</p>
+
+<script>
+function startVoice() {
+    const SpeechRecognition =
+        window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+        alert("Voice search not supported on this browser.");
+        return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 1;
+
+    recognition.onresult = function(event) {
+        const text = event.results[0][0].transcript;
+
+        document.querySelector('input[name="song"]').value = text;
+
+        document.querySelector('.search-form').submit();
+    };
+
+    recognition.onerror = function(event) {
+        alert("Voice search error: " + event.error);
+    };
+
+    recognition.start();
+}
+</script>
+
 </body>
 </html>
 """
-
 
 # ==================== SEARCH RESULTS PAGE ====================
 @app.route('/')
@@ -282,3 +326,4 @@ if __name__ == "__main__":
         port=int(os.environ.get("PORT", 5000)),
         debug=True
     )
+    
