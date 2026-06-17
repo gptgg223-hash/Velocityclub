@@ -228,7 +228,7 @@ def search():
     try:
         data = response.json()
         print(data)
-        results = data.get("data", {}).get("results", [])[:12]
+        results = data.get("data", {}).get("results", [])[:22]
 
         filtered_results = []
 
