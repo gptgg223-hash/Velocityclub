@@ -1,6 +1,12 @@
 from flask import Flask, request
+from rapidfuzz import fuzz
 import requests
 import os
+
+user_profile = {
+    "searches": [],
+    "plays": []
+}
 
 app = Flask(__name__)
 
@@ -103,10 +109,12 @@ HOME_PAGE = """
     <header>
         <div class="logo">♫ Velocity Club</div>
         <nav>
-            <a href="#">Home</a>
-            <a href="#">Contact</a>
-            <a href="#">About</a>
-            <a href="#">Developer</a>
+            <a href="mailto:xdeveloperr01@gmail.com">Developer</a>
+            <a href="mailto:xdeveloperr01@gmail.com">Contact</a>
+            <a href="/about">About</a>
+            <a href="mailto:xdeveloperr01@gmail.com?subject=Velocity Club Bug Report">
+    Report Issue
+</a>
         </nav>
     </header>
 
@@ -121,7 +129,7 @@ HOME_PAGE = """
             onclick="startVoice()">🎤</button>
         </form>
 <div style="margin-top:40px;text-align:center;">
-<h2>Trending Songs</h2>
+<h2> Recommended For You</h2>
 
 <form action="/search" method="POST">
 <button name="song" value="Believer">Believer</button>
@@ -132,7 +140,7 @@ HOME_PAGE = """
 </div>
 
     </div>
-<p>Developed by XDevelopers with JioSaavn</p>
+<p>Developed by XDeveloperr</p>
 <p>© 2026 Velocity Club</p>
 
 <script>
@@ -174,12 +182,57 @@ function startVoice() {
 # ==================== SEARCH RESULTS PAGE ====================
 @app.route('/')
 def home():
+
     return HOME_PAGE
+
+    if "kantara" in str(user_profile["searches"]).lower():
+            page = HOME_PAGE
+            page = page.replace("Believer", "Singara Siriye")
+            page = page.replace("Shape of You", "Dharani Mandala Madhyadolage")
+            page = page.replace("Kesariya", "Ninnindale")
+            page = page.replace("Levitating", "Matinalli Helalarenu")
+    return page
+
+@app.route("/about")
+def about():
+    return """
+    <html>
+    <head>
+        <title>About - Velocity Club</title>
+    </head>
+    <body style="background:#000;color:white;padding:30px;">
+        <h1>About Velocity Club</h1>
+
+        <p>Welcome to Velocity Club, a modern music streaming platform built for music lovers around the world.</p>
+
+        <p>Velocity Club was created with a simple goal: to make discovering, searching, and enjoying music fast, easy, and enjoyable.</p>
+
+        <h2>Why Choose Velocity Club?</h2>
+
+        <ul>
+            <li>🎵 Fast and accurate music search</li>
+            <li>🎧 Built-in music player</li>
+            <li>📱 Mobile-friendly design</li>
+            <li>⚡ Fast performance</li>
+            <li>🔄 Regular updates</li>
+        </ul>
+
+        <p>📧 Contact: xdeveloperr01@gmail.com</p>
+
+        <p>Developed by XDeveloperr</p>
+
+        <p>© 2026 Velocity Club. All Rights Reserved.</p>
+    </body>
+    </html>
+    """
 
 
 @app.route('/search', methods=['POST'])
 def search():
     song = request.form.get("song", "").strip()
+    if song:
+        user_profile["searches"].append(song)
+    print(user_profile)
 
     if not song:
         return "<h1 style='color:white;background:#121212;padding:100px;'>Please enter a song name!</h1>"
@@ -192,19 +245,33 @@ def search():
     try:
         data = response.json()
         results = data.get("data", {}).get("results", [])[:12]
+
+        filtered_results = []
+
+        for result in results:
+            title = result.get("name", "").lower()
+
+            if fuzz.ratio(song.lower(), title) > 60:
+                filtered_results.append(result)
+
+        if filtered_results:
+            results = filtered_results
+
     except:
         results = []
 
     songs_html = ""
+
     for result in results:
         title = result.get("name", "Unknown")
         artist = result.get("artists", {}).get("primary", [{}])[0].get("name", "Unknown")
         album = result.get("album", {}).get("name", "Unknown")
         duration = result.get("duration", 0)
         image = result.get("image", [{}])[-1].get("url", "")
-        song_url = result.get("url", "#")
+        audio_url = result.get("downloadUrl", [{}])[-1].get("url", "")
 
         songs_html += f"""
+
         <div class="song-card">
             <img src="{image}" alt="{title}">
             <div class="song-info">
@@ -214,9 +281,12 @@ def search():
                 <p>⏱️ {duration} sec</p>
             </div>
             <div class="song-actions">
-                <a href="{song_url}" target="_blank"><button class="play-btn">🎵 Open Song</button></a>
-                <a href="{song_url}" target="_blank"><button class="jio-btn">View on JioSaavn ↗</button></a>
-            </div>
+
+    <button onclick="playSong(`{audio_url}`,`{title}`,`{artist}`,`{image}`)">
+    ▶ Play
+</button> 
+
+</div>
         </div>
         """
 
@@ -315,6 +385,64 @@ def search():
         {songs_html}
         
         <a href="/" style="display:block; text-align:center; margin:40px auto; color:#c026d3; text-decoration:none; font-weight:600;">← Search Again</a>
+
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+background:#111;
+padding:15px;
+display:flex;
+align-items:center;
+gap:15px;
+z-index:9999;
+">
+...
+</div><div id="player-bar" style="
+position:fixed;
+bottom:0;
+left:0;
+right:0;
+height:80px;
+background:#121212;
+border-top:1px solid #333;
+display:flex;
+justify-content:center;
+align-items:center;
+padding:10px 15px;
+z-index:9999;
+box-shadow:0 -2px 15px rgba(0,0,0,0.5);
+">
+
+<img id="player-image"
+     src=""
+     width="50"
+     height="50"
+     style="border-radius:8px;object-fit:cover;">
+
+<div style="width:80px;">
+    <div id="player-title" style="font-weight:bold;">
+        select the song
+    </div>
+
+    <div id="player-artist" style="color:#aaa;font-size:14px;">
+    </div>
+</div>
+
+<audio id="audioPlayer" controls style="width:100%; max-width:300px;"></audio>
+
+</div>
+
+<script>
+function playSong(url,title,artist,image){{
+    document.getElementById("audioPlayer").src = url;
+    document.getElementById("player-title").innerText = title;
+    document.getElementById("player-artist").innerText = artist;
+    document.getElementById("player-image").src = image;
+    document.getElementById("audioPlayer").play();
+}}
+</script>
+
     </body>
     </html>
     """
@@ -326,4 +454,3 @@ if __name__ == "__main__":
         port=int(os.environ.get("PORT", 5000)),
         debug=True
     )
-    
