@@ -124,7 +124,7 @@ HOME_PAGE = """
             onclick="startVoice()">🎤</button>
         </form>
 <div style="margin-top:40px;text-align:center;">
-<h2>Trending Songs</h2>
+<h2>🎵recommendated for you🎵</h2>
 
 <form action="/search" method="POST">
 <button name="song" value="Believer">Believer</button>
@@ -135,8 +135,8 @@ HOME_PAGE = """
 </div>
 
     </div>
-<p>Developed by XDeveloperr</p>
-<p>© 2026 Velocity Club</p>
+<p>    Developed by XDeveloperr</p>
+<p>    © 2026 Velocity Club</p>
 
 <script>
 function startVoice() {
